@@ -1,8 +1,8 @@
 %include "boot.inc"
 section loader vstart=LOADER_BASE_ADDR
-                                                        ;==========================
+                                                        ;=================================
                                                         ;设置GDT（全局描述符表）
-                                                        ;==========================
+                                                        ;=================================
 
 GDT_BASE:
     dd 0x000000000
@@ -123,9 +123,9 @@ loader_start:
     mov ecx,20
     call rd_disk_m_32
 
-                                                        ;===============
+                                                        ;=====================
                                                         ;设置页表
-                                                        ;===============
+                                                        ;=====================
     call setup_page  
 
     mov  ebx,[gdt_ptr +2]
@@ -135,18 +135,138 @@ loader_start:
 
     add esp,0xc0000000
 
+    or eax, 0x80000000  
+    mov cr3,eax
+
+                                                    ; 打开cr0的pg位(第31位)
+
+    mov eax,cr0
+    or  eax,0x80000000
+    mov cr0,eax
+
+    lgdt [gdt_ptr]                                  ;在开启分页后,用gdt新的地址重新加载
+
+
+                                                    ;================================
+                                                    ;进入内核 内核初始化
+                                                    ;================================
+enter_kernel:
+      call kernel_init
+      mov  esp,0xc009f000
+      jmp KERNEL_ENTRY_POINT
+
+kernel init:
+    xor eax,eax
+    xor ebx,ebx
+    xor edx,edx
+    xor ecx,ecx
+
+
+    mov dx,[KERNEL_BIN_BASE_ADDR+42]
+
+    mov ebx,[KERNEL_BIN_BASE_ADDR+28]
+    add ebx,KERNEL_BIN_BASE_ADDR                       ;ebx为第一个段的大小
+
+    mov cx,[KERNEL_BIN_BASE_ADDR+44]
+
+.each_segment:
+    cmp byte [ebx+0],PT_NULL
+    je .PT_NULL
+
+    push dword [ebx+16]
+    add eax,KERNEL_BIN_BASE_ADDR
+    push eax
+    push dword [ebx+8]
+    call mem_cpy
+    add esp,12
+.PT_NULL
+    add ebx,edx
+    loop .each_segment
+    ret
+
+mem_cpy:
+    cld
+    push ebp
+    mov  ebp,esp
+    push ecx
+    mov edi,[ebp+8]
+    mov esi,[ebp+12]
+    mov ecx,[ebp+16]
+    rep movsb
+
+
+    pop ecx
+    pop ebp
+    ret
 
 
 
 
+
+
+
+
+
+
+
+
+
+                                                        ;------------------------------------------   创建页目录及页表  -------------------------------------
+                                                        ;----------------以下6行是将1M开始的4KB置为0，将页目录表初始化
+                                                        ;二级页表在内存中的存储，4KB（4096）  页目录表   页表1   页表2  页表3 .......
 
 setup_page:
+                                                        ;页目录表全为0
 
     mov ecx,4096
     mov esi,0
-
 .clear_page_dir
-    mov byte [PAGE_DIR_TABLE_POS]
+    mov byte [PAGE_DIR_TABLE_POS],0
+    inc esi
+    loop .clear_page_dir
+
+.create_pde:                                            ;---------------
+                                                        ;页目录表
+    mov eax,PAGE_DIR_TABLE_POS
+    add eax,0x1000
+    mov ebx,eax                                         ;ebx为页表1的地址
+    or eax,PG_P|PG_RW_W|PG_US_U                         ; 页目录项的属性RW和P位为1,US为1,表示用户属性,所有特权级别都可以访问.
+                                                        ;eax为页目录表[0]的内容
+
+    mov [PAGE_DIR_TABLE_POS+0x0],eax                    ; 页目录表0号项和768号写入第一个页表的位置(0x101000)及属性(7)          
+    mov [PAGE_DIR_TABLE_POS+0xc00],eax
+
+    sub eax,0x1000                                      ;使最后一个目录项指向页目录表自己的地址，为的是将来动态操作页表做准备
+    mov [PAGE_DIR_TABLE_POS+4092],eax
+
+                                                        ;---------------
+                                                        ;页表
+  				                                        ; -----------------初始化第一个页表，因为我们的操作系统不会超过1M，所以只用初始化256项
+
+    mov ecx,256
+    mov esi,0
+    mov edx,PG_P|PG_RW_W|PG_US_U
+.create_pte:
+    mov [ebx+esi*4],edx
+    add edx,4096
+    inc esi
+    loop .create_pte
+
+                                                        ; -------------------初始化页目录表769号-1022号项，769号项指向第二个页表的地址（此页表紧挨着上面的第一个页表），770号指向第三个，以此类推
+    mov eax,PAGE_DIR_TABLE_POS
+    add eax,0x2000
+    or  eax,PG_P|PG_RW_W|PG_US_U
+    mov ebx,PAGE_DIR_TABLE_POS
+    mov ecx,254
+    mov esi,769
+.create_kernel_pde:
+    mov [ebx+esi*4],eax
+    add eax,0x1000
+    loop .create_kernel_pde
+    ret
+
+
+
 
 
 
