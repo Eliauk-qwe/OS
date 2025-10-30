@@ -8,7 +8,7 @@ GDT_BASE:
     dd 0x000000000
     dd 0x000000000
 
-CODE_DESP:
+CODE_DESC:
     dd 0x0000FFFF
     dd DESC_CODE_HIGH4
 
@@ -21,14 +21,14 @@ VIDEO_DESC:
     dd DESC_VIDEO_HIGH4
 
 
-    GDT_SIZE epu $-GDT_BASE                                 ;gdt_ptr中需要的变量
-    GDT_LIMIT  epu GDT_SIZE-1
+    GDT_SIZE equ $-GDT_BASE                                 ;gdt_ptr中需要的变量
+    GDT_LIMIT  equ GDT_SIZE-1
 
-    time 60 dp 0                                            ;初始化60个描述符
+    times 60 dq 0                                            ;初始化60个描述符
 
-    SELECTOR_CODE epu (0x0001<<3)+TI_GDT+RPL0               ;初始化段选择子
-    SELECTOR_DATA epu (0x0002<<3)+TI_GDT+RPL0
-    SELECTOR_VIDEO epu (0x003<<3)+TI_GDT+RPL0
+    SELECTOR_CODE equ (0x0001<<3)+TI_GDT+RPL0               ;初始化段选择子
+    SELECTOR_DATA equ (0x0002<<3)+TI_GDT+RPL0
+    SELECTOR_VIDEO equ (0x003<<3)+TI_GDT+RPL0
 
 total_mem_bytes dd 0
 
@@ -107,6 +107,7 @@ loader_start:
                                                         ;==================================
                                                         ;保护模式开始     初始化保护模式
                                                         ;==================================
+p_mode_start:
     mov ax,SELECTOR_DATA
     mov ds,ax
     mov es,ax
@@ -155,7 +156,7 @@ enter_kernel:
       mov  esp,0xc009f000
       jmp KERNEL_ENTRY_POINT
 
-kernel init:
+kernel_init:
     xor eax,eax
     xor ebx,ebx
     xor edx,edx
@@ -179,7 +180,7 @@ kernel init:
     push dword [ebx+8]
     call mem_cpy
     add esp,12
-.PT_NULL
+.PT_NULL:
     add ebx,edx
     loop .each_segment
     ret
@@ -220,7 +221,7 @@ setup_page:
 
     mov ecx,4096
     mov esi,0
-.clear_page_dir
+.clear_page_dir:
     mov byte [PAGE_DIR_TABLE_POS],0
     inc esi
     loop .clear_page_dir
