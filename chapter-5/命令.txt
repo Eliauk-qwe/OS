@@ -1,0 +1,12 @@
+docker run -it myos-gcc:4.4 bash
+docker run -it --name myos \
+  -v /home/wly/桌面/bochs:/bochs \
+  -v "/home/wly/桌面/真象还原/myOS:/myos" \
+  myos-gcc:4.4 bash
+
+
+
+
+docker start -ai myos
+nasm -o build/mbr -I chapter-5/boot/include chapter-5/boot/mbr.s
+dd if=build/mbr of=/bochs/hd60M.img bs=512 count=1 conv=notrunc
