@@ -54,7 +54,7 @@ put_char:
     shr bx,1                                                ;bx虽然指向这个字符的颜色属性字节，但是除以2还是变回这个字符的光标位置
     jmp .set_cursor                                         ;去设置光标位置, 这样光标位置才能真正在视觉上更新
 
- .put_other:
+.put_other:
     shl bx, 1				                                ; 光标位置是用2字节表示,将光标值乘2,表示对应显存中的偏移字节
     mov [gs:bx], cl			                                ; ascii字符本身
     inc bx
@@ -117,3 +117,6 @@ put_char:
 .put_char_done: 
     popad
     ret
+
+
+    
