@@ -10,9 +10,9 @@ enum intr_status{
     INTR_ON
 };
 
-enum intr_status get_intr_status();
-enum intr_status intr_open();
-enum intr_status intr_close();      
+enum intr_status get_intr_status(void);
+enum intr_status intr_open(void);
+enum intr_status intr_close(void);      
 enum intr_status set_intr_status(enum intr_status status);
 #endif
 

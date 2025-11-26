@@ -7,8 +7,8 @@ void debug_print(const char* filename, int line, const char* func_name, const ch
     //关闭中断.再打印信息
     intr_close();
 
-    
-    put_int("!!!!!!!!!!!  error  !!!!!!!!!!!\n");
+
+    put_str("!!!!!!!!!!!  error  !!!!!!!!!!!\n");
     put_str("filename:");
     put_str(filename);
     put_str("\n");

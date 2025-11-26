@@ -102,7 +102,7 @@ LOAD build/debug.o
 .plt.sec
  *(.plt.sec)
 
-.text           0x00000000c0001500      0xab4
+.text           0x00000000c0001500      0xab3
  *(.text.unlikely .text.*_unlikely .text.unlikely.*)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -129,7 +129,7 @@ LOAD build/debug.o
                 0x00000000c0001dc0                put_str
                 0x00000000c0001dde                put_char
                 0x00000000c0001eab                put_int
- .text          0x00000000c0001f0e       0xa6 build/debug.o
+ .text          0x00000000c0001f0e       0xa5 build/debug.o
                 0x00000000c0001f0e                debug_print
  *(.gnu.warning)
 
@@ -357,21 +357,21 @@ LOAD build/debug.o
  .debug_pubnames
                 0x00000000000000db       0x22 build/debug.o
 
-.debug_info     0x0000000000000000      0x65a
+.debug_info     0x0000000000000000      0x65d
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x0000000000000000       0xab build/main.o
  .debug_info    0x00000000000000ab       0x73 build/init.o
- .debug_info    0x000000000000011e      0x35d build/interrupt.o
- .debug_info    0x000000000000047b      0x11d build/timer.o
- .debug_info    0x0000000000000598       0xc2 build/debug.o
+ .debug_info    0x000000000000011e      0x360 build/interrupt.o
+ .debug_info    0x000000000000047e      0x11d build/timer.o
+ .debug_info    0x000000000000059b       0xc2 build/debug.o
 
-.debug_abbrev   0x0000000000000000      0x2e6
+.debug_abbrev   0x0000000000000000      0x2cf
  *(.debug_abbrev)
  .debug_abbrev  0x0000000000000000       0x72 build/main.o
  .debug_abbrev  0x0000000000000072       0x3f build/init.o
- .debug_abbrev  0x00000000000000b1      0x156 build/interrupt.o
- .debug_abbrev  0x0000000000000207       0x7f build/timer.o
- .debug_abbrev  0x0000000000000286       0x60 build/debug.o
+ .debug_abbrev  0x00000000000000b1      0x13f build/interrupt.o
+ .debug_abbrev  0x00000000000001f0       0x7f build/timer.o
+ .debug_abbrev  0x000000000000026f       0x60 build/debug.o
 
 .debug_line     0x0000000000000000      0x22a
  *(.debug_line .debug_line.* .debug_line_end)
