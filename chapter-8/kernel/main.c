@@ -1,5 +1,6 @@
 #include "print.h"
 #include "init.h"
+#include "debug.h"
 int main(void){
     
     
@@ -7,10 +8,7 @@ int main(void){
     put_str("interrupt init\n");
     init_all();
 
-    asm volatile
-    (
-        "sti"   //为了演示中断，这里先临时开启中断
-    );
+    ASSERT(1==2);
 
 
     while(1);

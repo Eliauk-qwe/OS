@@ -13,6 +13,10 @@
 
 #define IDT_DESC_CNT 0x21	   //支持的中断描述符个数33
 
+//断言函数
+#define EFLAGS_IF  0x00000200  // EFLAGS寄存器中的IF位为1[允许中断]。
+#define GET_EFLAGS(EFLAG_VAR) asm volatile("pushfl; popl %0":"=g"(EFLAG_VAR))  //将EFLAGS值存入变量EFLAG_VAR中
+
 //按照中断门描述符格式定义结构体
 struct gate_desc {
    uint16_t    func_offset_low_word;        //函数地址低字
@@ -134,3 +138,50 @@ void idt_init() {
    put_str("idt_init done\n");
 }
 
+//获取当前中断状态
+//通过读取EFLAGS寄存器中的IF位，再与EFLAGS_IF进行与运算，判断中断是否开启
+enum intr_status get_intr_status(){
+   uint32_t eflags=0;
+   GET_EFLAGS(eflags);
+   return (eflags & EFLAGS_IF) ? INTR_ON:INTR_OFF;
+
+}
+
+
+//开启中断，并返回之前的中断状态
+enum intr_status intr_open(){
+   enum intr_status old_status;
+   //现在是什么状态？ 开？关？
+   if(INTR_ON==get_intr_status()){
+      old_status=INTR_ON;
+      return old_status;
+   }
+   else{
+      old_status=INTR_OFF;
+      //关--->开
+      asm volatile("sti");
+      return old_status;
+   }
+}
+
+
+//关闭中断，并返回之前的中断状态
+enum intr_status intr_close(){
+   enum intr_status old_status;
+   //现在是什么状态？ 开？关？
+   if(INTR_ON==get_intr_status()){
+      old_status=INTR_ON;
+      //开--->关
+      asm volatile("cli" : : : "memory");
+      return old_status;
+   }
+   else{
+      old_status=INTR_OFF;
+      return old_status;
+   }
+}
+
+//设置中断状态，并返回之前的中断状态
+enum intr_status set_intr_status(enum intr_status status){
+   return status & INTR_ON ? intr_open():intr_close();
+}
