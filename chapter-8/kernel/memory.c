@@ -4,6 +4,7 @@ struct physical_memory_pool kernel_physical_pool;
 struct physical_memory_pool user_physical_pool;
 struct virtual_memory_pool kernel_virtual_pool;
 
+//初始化内存池
 static void mem_pool_init(uint32_t all_mem){
     put_str("mem_pool_init start\n");
 
